@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { DB_URL, DB_USER, DB_PASS, DB_DBNAME } = process.env;
 console.log(process.env)
+
 //Database Code Goes Here
 const mongoose = require('mongoose');
 mongoose.connect(DB_URL, {
