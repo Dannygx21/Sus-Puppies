@@ -1,3 +1,6 @@
+require('dotenv').config();
+const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env;
+
 const express = require('express');
 const app = express();
 
@@ -7,7 +10,19 @@ const { Server } = require('socket.io');
 const io = new Server(server);
 
 const axios = require('axios');
-const User = require('../db');
+// connect to database
+const mongoose = require('mongoose');
+mongoose.connect(DB_URL, {
+  dbName: DB_DBNAME,
+  user: DB_USER,
+  pass: DB_PASS,
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('Error connecting to MongoDB:', err);
+});
+
+const UserController = require('../db/controllers/User.js');
 
 app.use(express.json());
 app.use(express.static(__dirname + '/../public'));
@@ -17,43 +32,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-  try {
-    const username = req.body.username;
-    const password = req.body.password;
-    const socket = req.body.socket;
-    const data = await login(username, password, socket);
-    res.status(200).send(data);
-  } catch (err) {
-    res.status(500).send(err);
-  }
+  UserController.login(req, res);
 });
-
-const login = async (username, password, socket) => {
-  try {
-    //Database code goes here - check for existing user, create if new
-    const data = await User.findOne({ username: username }).exec();
-    if (data === null) {
-      data = await User.create({
-        username: username,
-        password: password,
-        socket: socket,
-      });
-      return data;
-    } else if (data.password !== password) {
-      return 'Error, Bad Username/Password. Check Password';
-      // throw new Error("Error, Bad Username/Password. Check Password");
-    } else {
-      data = await User.findOneAndUpdate(
-        username,
-        { username, password, socket },
-        { bew: true }
-      );
-      return data;
-    }
-  } catch (err) {
-    return err;
-  }
-};
 
 const gameState = {
   timer: 90,

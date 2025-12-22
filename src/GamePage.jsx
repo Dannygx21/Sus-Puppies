@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { data } from './mockData.js';
 import PlayerFrame from './Components/PlayerFrame.jsx';
 import Ruleset from './Components/Ruleset.jsx';
