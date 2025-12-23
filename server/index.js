@@ -394,9 +394,13 @@ const phaseChange = (countdownTimer) => {
     }
     if (maxVotes >= majority && victim !== 'NULL') {
       //Hang Victim Wolf
+      // for loop to look at all players
       for (let i = 0; i < gameState.playerInfo.length; i++) {
+        // if the current player is the player killed 
         if (gameState.playerInfo[i].username === victim) {
+          // if the player is a wolf
           if (gameState.playerInfo[i].role === 2) {
+            // change player role to 3 = dead wolf?
             gameState.playerInfo[i].role = 3;
             numWolves--;
             gameState.phaseResults.push([
@@ -406,6 +410,10 @@ const phaseChange = (countdownTimer) => {
             ]);
           } else {
             //Hang Other Victim
+            // change role to same role but dead
+            // if role 0 (alive villager) -> 1 (dead vilager)
+            // if role 4 (alive seer) -> 5 (dead seer)
+            // if role 6 (alive healer) -> 7 (dead healer)
             gameState.playerInfo[i].role += 1;
             numVillagers--;
             gameState.phaseResults.push([
@@ -417,6 +425,7 @@ const phaseChange = (countdownTimer) => {
           gameState.previousResult = victim + ' was killed yesterday!';
         }
       }
+      //if no majority of votes met, no victim (no role change for all player)
     } else {
       victim = 'No one';
       gameState.phaseResults.push([
@@ -428,6 +437,9 @@ const phaseChange = (countdownTimer) => {
     }
   } else {
     //Wolf Vote Logic
+    // used at night phase only for wolves to vote on who to kill
+    // also used for seer to view player role at night
+    // also used for healer to heal player at night
     let votes = {};
     let seerTarget = '';
     let healerTarget = '';
@@ -435,6 +447,7 @@ const phaseChange = (countdownTimer) => {
       let player = gameState.playerInfo.find(
         (player) => player.username === gameState.votes[i][0]
       );
+      // seer role logic at night phase
       if (player.role === 4) {
         seerTarget = gameState.votes[i][1];
         if (seerTarget !== 'NULL' || seerTarget !== 'select a player') {
@@ -456,6 +469,7 @@ const phaseChange = (countdownTimer) => {
             ' is actually a ' +
             roleDefinitions[seerTargetPlayerInfo.role];
         }
+        // healer role logic at night phase
       } else if (player.role === 6) {
         healerTarget = gameState.votes[i][1];
       } else if (votes[gameState.votes[i][1]]) {
