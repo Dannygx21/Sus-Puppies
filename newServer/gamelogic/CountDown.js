@@ -1,3 +1,4 @@
+import { Roles } from "./assignRoles";
 /**
  * CountDown will decrement the timer property in the reference object and pass the result to the callback including 0.
  * This class has four methods. start, stop, countdown, and newCountDown
@@ -43,34 +44,10 @@ export class CountDown {
      * Will not add an additional timer if called while actively counting down.
      * If you need a new countdown then call newCountDown()
      */
-    start() {
+    async start() {
         if (gameState.gameStatus === 'setup') {
-            let numWolves = gameState.wolves.number;
-            while (numWolves > 0) {
-                let rando = Math.floor(Math.random() * gameState.playerInfo.length);
-                if (gameState.playerInfo[rando].role === 0) {
-                    gameState.playerInfo[rando].role = 2;
-                    numWolves--;
-                }
-            }
-            let needSeer = false;
-            if (gameState.isSeer) needSeer = true;
-            while (needSeer) {
-                let rando = Math.floor(Math.random() * gameState.playerInfo.length);
-                if (gameState.playerInfo[rando].role === 0) {
-                    gameState.playerInfo[rando].role = 4;
-                    needSeer = false;
-                }
-            }
-            let needHealer = false;
-            if (gameState.isHealer) needHealer = true;
-            while (needHealer) {
-                let rando = Math.floor(Math.random() * gameState.playerInfo.length);
-                if (gameState.playerInfo[rando].role === 0) {
-                    gameState.playerInfo[rando].role = 6;
-                    needHealer = false;
-                }
-            }
+            const playersWithRoles = await Roles.assignRoles(gameState)
+            gameState.playerInfo = playersWithRoles
             gameState.gameStatus = 'playing';
             io.emit('gameState-feed', this.gameState);
         }

@@ -178,6 +178,7 @@ io.on('connection', (socket) => {
       .then(({ body, status, data }) => {
         console.log(`status: ${status} ${data}`);
         if (data !== 'Error, Bad Username/Password. Check Password') {
+          // PLAYER OBJECT
           const playerState = {
             username,
             player_id: socketID,
