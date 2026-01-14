@@ -22,7 +22,7 @@ mongoose.connect(DB_URL, {
   console.error('Error connecting to MongoDB:', err);
 });
 
-const UserController = require('../db/controllers/User.js');
+const { UserController } = require('../db/controllers/User.js');
 
 app.use(express.json());
 app.use(express.static(__dirname + '/../public'));
