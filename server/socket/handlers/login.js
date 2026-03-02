@@ -1,12 +1,21 @@
 const { login } = require('../../db/controllers/UserController');
+const { getLobby } = require('../../state/lobbies')
 
 /**
  * Handles the 'login' socket event.
  * Calls the DB directly (no internal HTTP round-trip).
  * On success, adds the player to gameState and broadcasts updated state.
  */
-const loginHandler = (io, socket, gameState) => {
+const loginHandler = (io, socket) => {
+
   socket.on('login', async ({ username, password, picture }) => {
+    const lobby = getLobby(socket.lobbyId)
+    if (!lobby) {
+      socket.emit('login-failed', 'You are not in a lobby.')
+      return
+    }
+
+    const { gameState } = lobby
     console.log(`Login attempt: ${username}`);
 
     const user = await login(username, password, socket.id);
@@ -32,7 +41,7 @@ const loginHandler = (io, socket, gameState) => {
 
     socket.emit('login-success', user);
     io.to(socket.id).emit('playerState-feed', playerState);
-    io.emit('gameState-feed', gameState);
+    io.to(socket.lobbyId).emit('gameState-feed', gameState)
   });
 };
 

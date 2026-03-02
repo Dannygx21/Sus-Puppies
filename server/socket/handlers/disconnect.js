@@ -1,9 +1,15 @@
+const { getLobby, deleteLobby, getLobbySummaries } = require("../../state/lobbies");
+
 /**
  * Handles the 'disconnect' socket event.
  * Removes the player from gameState and transfers host if needed.
  */
-const disconnectHandler = (socket, gameState) => {
+const disconnectHandler = (io, socket) => {
   socket.on('disconnect', () => {
+    const lobby = getLobby(socket.lobbyId)
+    if (!lobby) return //player disconnected before ever joining a lobby
+    const { gameState } = lobby;
+
     console.log(`User ${socket.id} disconnected`);
 
     const { playerInfo } = gameState;
@@ -18,6 +24,11 @@ const disconnectHandler = (socket, gameState) => {
       gameState.host = playerInfo[0];
       console.log(`Host disconnected — ${playerInfo[0].username} is the new host`);
     }
+
+    if (gameState.playerInfo.length === 0) {
+      deleteLobby(socket.lobbyId)
+    }
+    io.emit('lobbies-feed', getLobbySummaries())
   });
 };
 

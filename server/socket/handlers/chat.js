@@ -7,9 +7,9 @@
  *   wolf-chat    – private channel for werewolves
  */
 const chatHandlers = (io, socket) => {
-  socket.on('living-chat-send', (message) => io.emit('living-chat-feed', message));
-  socket.on('ghost-chat-send',  (message) => io.emit('ghost-chat-feed', message));
-  socket.on('wolf-chat-send',   (message) => io.emit('wolf-chat-feed', message));
+  socket.on('living-chat-send', (message) => io.to(socket.lobbyId).emit('living-chat-feed', message));
+  socket.on('ghost-chat-send', (message) => io.to(socket.lobbyId).emit('ghost-chat-feed', message));
+  socket.on('wolf-chat-send', (message) => io.to(socket.lobbyId).emit('wolf-chat-feed', message));
 };
 
 module.exports = chatHandlers;

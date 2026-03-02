@@ -1,4 +1,5 @@
 const { phaseChange, countLivingRoles } = require('../../game/phaseChange');
+const { getLobby } = require('../../state/lobbies');
 
 /**
  * Handles the 'vote-send' socket event.
@@ -7,8 +8,12 @@ const { phaseChange, countLivingRoles } = require('../../game/phaseChange');
  * Day phase:  all living players must vote
  * Night phase: only wolves + specialists (Seer/Healer) vote
  */
-const voteHandler = (io, socket, gameState, countdownTimer) => {
+const voteHandler = (io, socket) => {
   socket.on('vote-send', (voteTuple) => {
+    const lobby = getLobby(socket.lobbyId)
+    if (!lobby) return;
+    const { gameState, countdownTimer } = lobby
+
     gameState.votes.push(voteTuple);
 
     const { numWolves, numVillagers, numSpecialists } = countLivingRoles(gameState.playerInfo);
@@ -18,7 +23,7 @@ const voteHandler = (io, socket, gameState, countdownTimer) => {
       : numWolves + numSpecialists;
 
     if (gameState.votes.length === votesNeeded) {
-      phaseChange(gameState, io, countdownTimer);
+      phaseChange(gameState, io, countdownTimer, socket.lobbyId);
     }
   });
 };

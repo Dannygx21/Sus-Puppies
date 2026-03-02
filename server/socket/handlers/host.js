@@ -1,5 +1,6 @@
 const assignRoles = require('../../game/assignRoles');
 const { resetGameState } = require('../../state/gameState');
+const { getLobby } = require('../../state/lobbies');
 
 /**
  * Handles all 'host-send' socket events.
@@ -13,28 +14,32 @@ const { resetGameState } = require('../../state/gameState');
  * Supported commands (object):
  *   { numPlayers, numWolves, timer, seer, healer } – configure game rules
  */
-const hostHandler = (io, socket, gameState, countdownTimer) => {
+const hostHandler = (io, socket) => {
   socket.on('host-send', (command) => {
+    const lobby = getLobby(socket.lobbyId)
+    if (!lobby) return;
+    const { gameState, countdownTimer } = lobby;
+
     if (command === 'start') {
       assignRoles(gameState);
       gameState.gameStatus = 'playing';
-      io.emit('gameState-feed', gameState);
+      io.to(socket.lobbyId).emit('gameState-feed', gameState);
       countdownTimer.start();
-      io.emit('gameStatus-feed', 'playing');
+      io.to(socket.lobbyId).emit('gameStatus-feed', 'playing');
 
     } else if (command === 'pause') {
       countdownTimer.stop();
       gameState.gameStatus = 'paused';
-      io.emit('gameStatus-feed', 'paused');
+      io.to(socket.lobbyId).emit('gameStatus-feed', 'paused');
 
     } else if (command === 'resume') {
       gameState.gameStatus = 'playing';
-      io.emit('gameStatus-feed', 'playing');
+      io.to(socket.lobbyId).emit('gameStatus-feed', 'playing');
       countdownTimer.start();
 
     } else if (command === 'setup') {
       // New game: keep all currently connected players but reset everything else
-      resetGameState({
+      resetGameState(gameState, {
         playerInfo: gameState.playerInfo,
         gameStatus: 'setup',
         host: gameState.host,
@@ -43,7 +48,7 @@ const hostHandler = (io, socket, gameState, countdownTimer) => {
         player.role = 0;
         io.to(player.player_id).emit('playerState-feed', player);
       });
-      io.emit('gameState-feed', gameState);
+      io.to(socket.lobbyId).emit('gameState-feed', gameState);
       io.to(gameState.host.player_id).emit('New Game Plus', true);
 
     } else if (typeof command === 'object' && command !== null) {
@@ -54,7 +59,7 @@ const hostHandler = (io, socket, gameState, countdownTimer) => {
       gameState.expectedPlayers = numPlayers;
       gameState.isSeer = seer;
       gameState.isHealer = healer;
-      io.emit('gameState-feed', gameState);
+      io.to(socket.lobbyId).emit('gameState-feed', gameState);
     }
   });
 };

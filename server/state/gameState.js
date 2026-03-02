@@ -17,16 +17,15 @@ const initialState = {
 };
 
 // Deep clone so nested objects/arrays are fresh each reset
-const gameState = JSON.parse(JSON.stringify(initialState));
-
+const createGameState = () => JSON.parse(JSON.stringify(initialState));
 /**
  * Resets gameState back to its initial values.
  * Pass a `preserve` object to keep specific properties (e.g. playerInfo, host).
  * Mutates gameState in place so all existing references stay valid.
  */
-const resetGameState = (preserve = {}) => {
+const resetGameState = (gameState, preserve = {}) => {
   const fresh = JSON.parse(JSON.stringify(initialState));
   Object.assign(gameState, fresh, preserve);
 };
 
-module.exports = { gameState, resetGameState };
+module.exports = { createGameState, resetGameState };

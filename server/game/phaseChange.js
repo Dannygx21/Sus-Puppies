@@ -135,7 +135,7 @@ const resolveNightVote = (gameState) => {
  * and advances to the next phase (or ends the game).
  * Emits updated gameState to all clients.
  */
-const phaseChange = (gameState, io, countdownTimer) => {
+const phaseChange = (gameState, io, countdownTimer, lobbyId) => {
   if (gameState.currentPhase === 'day') {
     resolveDayVote(gameState);
   } else {
@@ -166,7 +166,7 @@ const phaseChange = (gameState, io, countdownTimer) => {
     countdownTimer.newCountDown();
   }
 
-  io.emit('gameState-feed', gameState);
+  io.to(lobbyId).emit('gameState-feed', gameState);
 };
 
 module.exports = { phaseChange, countLivingRoles };
