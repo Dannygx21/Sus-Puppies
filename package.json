@@ -4,9 +4,9 @@
   "description": "Multiplayer online version of classic accusation game Werewolf!",
   "private": true,
   "scripts": {
-    "start-dev": "nodemon server/index.js",
+    "start-dev": "nodemon server/server.js",
     "webpack-dev": "webpack --watch",
-    "start": "webpack && node server/index.js",
+    "start": "webpack && node server/server.js",
     "test": "jest"
   },
   "repository": {
