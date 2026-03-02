@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import GamePage from './GamePage.jsx';
+import App from './App.jsx';
 
 //Using a random code to test react rendering correctly.
-ReactDOM.render(<GamePage />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));

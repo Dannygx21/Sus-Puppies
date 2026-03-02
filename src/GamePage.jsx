@@ -21,9 +21,7 @@ import PhaseChangeModal from './Components/PhaseChangeModal.jsx';
 import useSound from 'use-sound';
 import wolfSound from '../public/sounds/wolfSound.mp3';
 
-import { io } from 'socket.io-client';
-
-const GamePage = () => {
+const GamePage = ({ socket, lobbyId }) => {
   const [timer, setTimer] = useState(0);
   const [previousResult, setPreviousResult] = useState('Welcome to Day 0!');
   const [currentDay, setCurrentDay] = useState(0);
@@ -43,13 +41,6 @@ const GamePage = () => {
     healer: false,
   });
   const [seerMessage, setSeerMessage] = useState('');
-
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    // change to public URL for deployement
-    setSocket(io());
-  }, []);
 
   //TODO: Add Lifecycle methods as needed.
   useEffect(() => {

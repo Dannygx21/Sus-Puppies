@@ -27,7 +27,7 @@ const lobbyHandler = (io, socket) => {
         // this is how every other handler later knows which lobby this socket belongs to
         socket.lobbyId = newLobby.id
         // emit back to the socket with the full lobby state (client need this to transition to the game page)
-        socket.emit('lobby-joined', newLobby)
+        socket.emit('lobby-joined', { lobbyId: newLobby.id, gameState: newLobby.gameState })
         // broadcast the updated lobby list to everyone so other client's lobby browser refresh  
         io.emit('lobbies-feed', getLobbySummaries())
 
