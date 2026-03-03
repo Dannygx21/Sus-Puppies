@@ -14,6 +14,18 @@ const voteHandler = (io, socket) => {
     if (!lobby) return;
     const { gameState, countdownTimer } = lobby
 
+    // Validate: must be [string, string]
+    if (
+      !Array.isArray(voteTuple) ||
+      voteTuple.length !== 2 ||
+      typeof voteTuple[0] !== 'string' ||
+      typeof voteTuple[1] !== 'string'
+    ) return;
+
+    // Prevent duplicate vote from the same player
+    const [voter] = voteTuple;
+    if (gameState.votes.some(([v]) => v === voter)) return;
+
     gameState.votes.push(voteTuple);
 
     const { numWolves, numVillagers, numSpecialists } = countLivingRoles(gameState.playerInfo);

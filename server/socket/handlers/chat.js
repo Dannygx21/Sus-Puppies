@@ -6,10 +6,21 @@
  *   ghost-chat   – visible to dead players
  *   wolf-chat    – private channel for werewolves
  */
+const { sanitizeString } = require('../../utils/sanitize');
+
+const MAX_MSG_LEN = 300;
+
+const broadcast = (io, socket, feedEvent) => (raw) => {
+  if (!socket.lobbyId) return;
+  const message = sanitizeString(raw, MAX_MSG_LEN);
+  if (!message) return;
+  io.to(socket.lobbyId).emit(feedEvent, message);
+};
+
 const chatHandlers = (io, socket) => {
-  socket.on('living-chat-send', (message) => io.to(socket.lobbyId).emit('living-chat-feed', message));
-  socket.on('ghost-chat-send', (message) => io.to(socket.lobbyId).emit('ghost-chat-feed', message));
-  socket.on('wolf-chat-send', (message) => io.to(socket.lobbyId).emit('wolf-chat-feed', message));
+  socket.on('living-chat-send', broadcast(io, socket, 'living-chat-feed'));
+  socket.on('ghost-chat-send',  broadcast(io, socket, 'ghost-chat-feed'));
+  socket.on('wolf-chat-send',   broadcast(io, socket, 'wolf-chat-feed'));
 };
 
 module.exports = chatHandlers;

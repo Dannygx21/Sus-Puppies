@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { data } from './mockData.js';
 import PlayerFrame from './Components/PlayerFrame.jsx';
 import Ruleset from './Components/Ruleset.jsx';
 import Header from './Components/Header.jsx';
@@ -99,10 +98,8 @@ const GamePage = ({ socket, lobbyId, initialPlayerInfo }) => {
     const newPlayerState = playerInfo.find(
       (player) => player.player_id === playerState.player_id
     );
-    if (playerState.role === 0) {
-      if (playerState.role != newPlayerState.role) {
-        setPlayerState(newPlayerState);
-      }
+    if (playerState.role === 0 && newPlayerState && playerState.role !== newPlayerState.role) {
+      setPlayerState(newPlayerState);
     }
   }, [socket]);
 

@@ -1,5 +1,5 @@
 const CountDown = require("../../game/CountDown")
-const { getLobbySummaries, createLobby, getLobby, deleteLobby } = require("../../state/lobbies")
+const { getLobbySummaries, createLobby, getLobby, deleteLobby, MAX_PLAYERS } = require("../../state/lobbies")
 const { countLivingRoles } = require("../../game/phaseChange")
 
 const lobbyHandler = (io, socket) => {
@@ -45,6 +45,12 @@ const lobbyHandler = (io, socket) => {
         // if lobby is playing, players can't join
         if (lobby.gameState.gameStatus !== 'setup') {
             socket.emit('lobby-error', 'Game in progress, please wait until lobby is waiting to start')
+            return
+        }
+
+        // enforce player cap
+        if (lobby.gameState.playerInfo.length >= MAX_PLAYERS) {
+            socket.emit('lobby-error', 'Lobby is full (max 20 players)')
             return
         }
 

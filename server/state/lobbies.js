@@ -1,17 +1,18 @@
+const { randomUUID } = require('crypto');
 const { createGameState } = require('./gameState')
 
 const MAX_LOBBIES = 10;
+const MAX_PLAYERS = 20;
 
 const lobbies = new Map();
 
 const createLobby = (name) => {
-    // creates a new lobby entry in the map. 
+    // creates a new lobby entry in the map.
     // check that the map size hasnt hit MAX_LOBBIES first
     // if it has return null.
     if (lobbies.size >= MAX_LOBBIES) return null
 
-    // Generate a simple unique ID(Date.now()?).
-    const id = String(Date.now())
+    const id = randomUUID();
     // Store it in the map an return the new lobby object
     const lobby = { id, name, gameState: createGameState(), countdownTimer: null }
     lobbies.set(id, lobby)
@@ -41,4 +42,4 @@ const getLobbySummaries = () => {
     }))
 }
 
-module.exports = { MAX_LOBBIES, createLobby, getLobby, deleteLobby, getLobbySummaries }
+module.exports = { MAX_LOBBIES, MAX_PLAYERS, createLobby, getLobby, deleteLobby, getLobbySummaries }

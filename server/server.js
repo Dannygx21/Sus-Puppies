@@ -8,6 +8,18 @@ const { Server } = require('socket.io');
 const connectDB = require('./db/connect');
 const registerSocketHandlers = require('./socket/index');
 
+// ─── Global error guards ───────────────────────────────────────────────────────
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception — shutting down:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection — shutting down:', reason);
+  process.exit(1);
+});
+
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, '../public');
 
@@ -60,8 +72,16 @@ registerSocketHandlers(io);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-connectDB();
-
-httpServer.listen(PORT, () => {
-  console.log(`Werewolf listening on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    httpServer.listen(PORT, () => {
+      console.log(`Werewolf listening on port ${PORT}`);
+    }).on('error', (err) => {
+      console.error('Server failed to bind port:', err);
+      process.exit(1);
+    });
+  })
+  .catch((err) => {
+    console.error('Database connection failed — aborting startup:', err);
+    process.exit(1);
+  });

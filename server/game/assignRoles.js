@@ -9,38 +9,35 @@
 const assignRoles = (gameState) => {
   const { playerInfo, wolves, isSeer, isHealer } = gameState;
 
-  // Assign werewolves
-  let wolvesLeft = wolves.number;
-  while (wolvesLeft > 0) {
-    const i = Math.floor(Math.random() * playerInfo.length);
-    if (playerInfo[i].role === 0) {
-      playerInfo[i].role = 2;
-      wolvesLeft--;
-    }
+  const specialCount = (isSeer ? 1 : 0) + (isHealer ? 1 : 0);
+  const totalSpecial = wolves.number + specialCount;
+
+  if (playerInfo.length === 0 || totalSpecial > playerInfo.length) {
+    console.error(
+      `assignRoles: cannot assign ${totalSpecial} special roles to ${playerInfo.length} players`
+    );
+    return;
   }
 
-  // Assign Seer
+  // Fisher-Yates shuffle of player indices — O(n), guaranteed to terminate
+  const indices = playerInfo.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  let cursor = 0;
+
+  for (let w = 0; w < wolves.number; w++) {
+    playerInfo[indices[cursor++]].role = 2;
+  }
+
   if (isSeer) {
-    let assigned = false;
-    while (!assigned) {
-      const i = Math.floor(Math.random() * playerInfo.length);
-      if (playerInfo[i].role === 0) {
-        playerInfo[i].role = 4;
-        assigned = true;
-      }
-    }
+    playerInfo[indices[cursor++]].role = 4;
   }
 
-  // Assign Healer
   if (isHealer) {
-    let assigned = false;
-    while (!assigned) {
-      const i = Math.floor(Math.random() * playerInfo.length);
-      if (playerInfo[i].role === 0) {
-        playerInfo[i].role = 6;
-        assigned = true;
-      }
-    }
+    playerInfo[indices[cursor++]].role = 6;
   }
 };
 

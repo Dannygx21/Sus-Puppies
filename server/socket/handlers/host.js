@@ -20,6 +20,11 @@ const hostHandler = (io, socket) => {
     if (!lobby) return;
     const { gameState, countdownTimer } = lobby;
 
+    if (socket.id !== gameState.host?.player_id) {
+      socket.emit('host-error', 'Only the host can send commands.');
+      return;
+    }
+
     if (command === 'start') {
       assignRoles(gameState);
       gameState.gameStatus = 'playing';
@@ -58,6 +63,15 @@ const hostHandler = (io, socket) => {
 
     } else if (typeof command === 'object' && command !== null) {
       const { numPlayers, numWolves, timer, seer, healer } = command;
+      if (
+        typeof numWolves !== 'number' || numWolves < 1 ||
+        typeof timer !== 'number' || timer < 10 ||
+        typeof seer !== 'boolean' ||
+        typeof healer !== 'boolean'
+      ) {
+        socket.emit('host-error', 'Invalid game configuration.');
+        return;
+      }
       gameState.timer = timer;
       gameState.initTimer = timer;
       gameState.wolves.number = numWolves;
