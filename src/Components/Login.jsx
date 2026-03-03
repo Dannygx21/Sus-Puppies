@@ -24,90 +24,97 @@ import s19 from '../../public/images/19.svg';
 import s20 from '../../public/images/20.svg';
 import Carousel from 'react-bootstrap/Carousel';
 
-
+const pictures = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20];
 
 const Login = ({ socket }) => {
-
   const [show, setShow] = useState(true);
+  const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [picture, setPicture] = useState('s1');
   const [header, setHeader] = useState('');
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
-  const handleChange = (e, stateSet) => {
-    e.preventDefault();
-    const data = e.target.value;
-    stateSet(data);
-  };
-
-  const onChange = (event, { newValue }) => {
-    setInputValue(newValue.replace(/\s/g, ''));
-  };
-
-  const pictures = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20]
 
   useEffect(() => {
-    console.log('Sent to server: ', userName, password);
     socket?.on('login-failed', (responseString) => {
-      console.log('failed login attempt');
       setHeader(responseString);
     });
     socket?.on('login-success', () => {
-      console.log('Good login');
       setShow(false);
     });
   }, [socket]);
 
-  const loginAttempt = () => {
-    socket.emit('login', { username: userName, password, picture });
+  const resetForm = () => {
     setUserName('');
     setPassword('');
+    setConfirmPassword('');
     setPicture('s1');
+    setHeader('');
   };
 
-  const onValueChange = (e) => {
-    console.log('picture selected: ', e.target.value);
-    setPicture(e.target.value);
-  }
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    resetForm();
+  };
+
+  const handleSubmit = () => {
+    if (!userName || !password) {
+      setHeader('Please enter a username and password.');
+      return;
+    }
+    if (mode === 'register') {
+      if (password.length < 8) {
+        setHeader('Password must be at least 8 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setHeader('Passwords do not match.');
+        return;
+      }
+      socket.emit('register', { username: userName, password, confirmPassword, picture });
+    } else {
+      socket.emit('login', { username: userName, password, picture });
+    }
+    setPassword('');
+    setConfirmPassword('');
+  };
 
   return (
     <>
       <Modal
         show={show}
-        onHide={handleClose}
+        onHide={() => {}}
         backdrop="static"
         keyboard={false}
         enforceFocus={true}
-        style={{ backgroundColor: "rgba(26, 15, 60, 1) !important" }}
+        style={{ backgroundColor: 'rgba(26, 15, 60, 1) !important' }}
       >
-        <Modal.Header closeButton={false} style={{ justifyContent: "space-around" }}>
+        <Modal.Header closeButton={false} style={{ justifyContent: 'space-around' }}>
           <Modal.Title>
-            <img src={werewolfTitle} style={{ height: "35vh", marginTop: "-175px", marginBottom: "-175px" }} />
+            <img src={werewolfTitle} style={{ height: '35vh', marginTop: '-175px', marginBottom: '-175px' }} />
           </Modal.Title>
         </Modal.Header>
-        <span style={{ alignSelf: "center" }} >
-          <img src={werewolf} style={{ height: "30vh", marginTop: "-35px", marginBottom: "-10px" }} />
+        <span style={{ alignSelf: 'center' }}>
+          <img src={werewolf} style={{ height: '30vh', marginTop: '-35px', marginBottom: '-10px' }} />
         </span>
-        <Modal.Body>{`${header}`}</Modal.Body>
-        <Modal.Footer
-          style={{ justifyContent: "center" }}
-        >
+        <Modal.Body style={{ textAlign: 'center', color: header ? 'rgb(255 22 22)' : 'white' }}>
+          {header || (mode === 'login' ? 'Log in to your account' : 'Create a new account')}
+        </Modal.Body>
+        <Modal.Footer style={{ justifyContent: 'center' }}>
           <div className="inputs">
             <label htmlFor="userInput">Username:&nbsp;</label>
             <input
               value={userName}
               type="text"
               id="userInput"
-              required={true}
+              required
               onChange={(e) => {
-                if (e.target.value.search(/[^a-zA-Z0-9]/g) === -1 && userName.length <= 15) {
-                  handleChange(e, setUserName)
+                if (e.target.value.search(/[^a-zA-Z0-9]/g) === -1 && e.target.value.length <= 20) {
+                  setUserName(e.target.value);
                 }
               }}
               className="inputs"
-              style={{ margin: "5px", color: "black" }}
+              style={{ margin: '5px', color: 'black' }}
             />
             <div>
               <label htmlFor="passwordInput">Password:&nbsp;&nbsp;</label>
@@ -115,11 +122,24 @@ const Login = ({ socket }) => {
                 value={password}
                 type="password"
                 id="passwordInput"
-                required={true}
-                onChange={(e) => handleChange(e, setPassword)}
-                style={{ margin: "5px", color: "black" }}
+                required
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ margin: '5px', color: 'black' }}
               />
             </div>
+            {mode === 'register' && (
+              <div>
+                <label htmlFor="confirmPasswordInput">Confirm:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                <input
+                  value={confirmPassword}
+                  type="password"
+                  id="confirmPasswordInput"
+                  required
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={{ margin: '5px', color: 'black' }}
+                />
+              </div>
+            )}
             <div>
               <br />
               <div className="profile-pic">
@@ -129,19 +149,19 @@ const Login = ({ socket }) => {
                       key={i}
                       id={`radio-${i}`}
                       type="radio"
-                      variant={i % 2 ? 'outline-danger' : 'outline-danger'}
+                      variant="outline-danger"
                       name="picture"
                       value={`s${i + 1}`}
                       checked={picture === `s${i + 1}`}
-                      onChange={(e) => onValueChange(e)}
+                      onChange={(e) => setPicture(e.target.value)}
                     >
                       <img
                         src={profile}
                         style={{
-                          height: "5vh",
-                          paddingRight: "3px",
-                          backgroundColor: "white",
-                          borderRadius: "1em"
+                          height: '5vh',
+                          paddingRight: '3px',
+                          backgroundColor: 'white',
+                          borderRadius: '1em',
                         }}
                       />
                     </ToggleButton>
@@ -155,22 +175,37 @@ const Login = ({ socket }) => {
         </Modal.Footer>
         <Button
           variant="warning"
-          onClick={(e) => {
-            if (userName && password) {
-              e.preventDefault();
-              loginAttempt()
-            } else {
-              setHeader('Please enter a username and password')
-            }
-          }}
-          style={{ width: "60%", display: "block", alignSelf: 'center' }}
+          onClick={handleSubmit}
+          style={{ width: '60%', display: 'block', alignSelf: 'center' }}
         >
-          Login
+          {mode === 'login' ? 'Login' : 'Create Account'}
         </Button>
-        <br />
+        <div style={{ textAlign: 'center', marginTop: '10px', marginBottom: '16px' }}>
+          {mode === 'login' ? (
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+              No account?{' '}
+              <span
+                onClick={() => switchMode('register')}
+                style={{ color: 'rgb(255 22 22)', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Create one
+              </span>
+            </span>
+          ) : (
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+              Have an account?{' '}
+              <span
+                onClick={() => switchMode('login')}
+                style={{ color: 'rgb(255 22 22)', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Log in
+              </span>
+            </span>
+          )}
+        </div>
       </Modal>
     </>
   );
-}
+};
 
 export default Login;

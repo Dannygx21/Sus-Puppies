@@ -1,8 +1,8 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
-/**
- * Find a user by username. Returns the user document or null.
- */
+const SALT_ROUNDS = 10;
+
 const findUser = async (username) => {
   try {
     return await User.findOne({ username });
@@ -13,33 +13,42 @@ const findUser = async (username) => {
 };
 
 /**
- * Create a new user. If the username already exists, returns the existing user.
+ * Authenticate an existing user.
+ * Returns { success: true, user } or { success: false, reason: string }.
+ * Uses the same error message for "not found" and "wrong password" to prevent
+ * username enumeration.
  */
-const createUser = async (username, password, socket) => {
+const login = async (username, password) => {
   try {
-    const existing = await findUser(username);
-    if (existing) return existing;
+    const user = await findUser(username);
+    if (!user) return { success: false, reason: 'Invalid credentials.' };
 
-    const newUser = new User({ username, password, socket });
-    await newUser.save();
-    return newUser;
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return { success: false, reason: 'Invalid credentials.' };
+
+    return { success: true, user };
   } catch (err) {
-    console.error('createUser error:', err);
-    return null;
+    console.error('login error:', err);
+    return { success: false, reason: 'Server error.' };
   }
 };
 
 /**
- * Auto-register login: find the user, or create one if they don't exist yet.
- * Returns the user document, or null on failure.
+ * Register a new user.
+ * Returns { success: true, user } or { success: false, reason: string }.
  */
-const login = async (username, password, socketId) => {
+const createUser = async (username, password, socketId) => {
   try {
-    const user = await findUser(username);
-    return user ?? (await createUser(username, password, socketId));
+    const existing = await findUser(username);
+    if (existing) return { success: false, reason: 'Username already taken.' };
+
+    const hashed = await bcrypt.hash(password, SALT_ROUNDS);
+    const newUser = new User({ username, password: hashed, socket: socketId });
+    await newUser.save();
+    return { success: true, user: newUser };
   } catch (err) {
-    console.error('login error:', err);
-    return null;
+    console.error('createUser error:', err);
+    return { success: false, reason: 'Server error.' };
   }
 };
 

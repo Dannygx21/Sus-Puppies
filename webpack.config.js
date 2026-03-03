@@ -1,7 +1,10 @@
-const webpack = require('webpack');
 const path = require('path');
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 module.exports = {
+  mode: isDev ? 'development' : 'production',
+  devtool: isDev ? 'eval-source-map' : false,
   entry: path.resolve(__dirname, './src/index.jsx'),
   module: {
     rules: [
@@ -12,22 +15,16 @@ module.exports = {
       },
       {
         test: /\.(jpg|jpeg|gif|png|svg)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            publicPath: 'images',
-            outputPath: 'images',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
         },
       },
       {
         test: /\.(mp3|wav)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          publicPath: 'sounds',
-          outputPath: 'sounds',
+        type: 'asset/resource',
+        generator: {
+          filename: 'sounds/[name][ext]',
         },
       },
     ],
@@ -39,5 +36,4 @@ module.exports = {
     path: path.resolve(__dirname, './public'),
     filename: 'bundle.js',
   },
-  mode: process.env.NODE_ENV || 'development',
 };
