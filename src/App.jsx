@@ -18,7 +18,14 @@ const App = () => {
             setLobbyId(lobbyId)
             setView('game')
         })
-        return () => socket.off('lobby-joined')
+        socket.on('left-lobby', () => {
+            setLobbyId(null)
+            setView('lobby')
+        })
+        return () => {
+            socket.off('lobby-joined')
+            socket.off('left-lobby')
+        }
     }, [socket])
 
     return (

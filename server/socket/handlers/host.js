@@ -38,9 +38,14 @@ const hostHandler = (io, socket) => {
       countdownTimer.start();
 
     } else if (command === 'setup') {
-      // New game: keep all currently connected players but reset everything else
+      // New game: keep only players still connected to the room, drop anyone
+      // who left mid-game (their socket is no longer in the room).
+      const room = io.sockets.adapter.rooms.get(socket.lobbyId)
+      const connectedPlayers = gameState.playerInfo.filter(
+        (p) => room && room.has(p.player_id)
+      );
       resetGameState(gameState, {
-        playerInfo: gameState.playerInfo,
+        playerInfo: connectedPlayers,
         gameStatus: 'setup',
         host: gameState.host,
       });

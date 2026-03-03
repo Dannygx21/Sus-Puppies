@@ -1,5 +1,6 @@
 const CountDown = require("../../game/CountDown")
-const { getLobbySummaries, createLobby, getLobby } = require("../../state/lobbies")
+const { getLobbySummaries, createLobby, getLobby, deleteLobby } = require("../../state/lobbies")
+const { countLivingRoles } = require("../../game/phaseChange")
 
 const lobbyHandler = (io, socket) => {
     socket.on('get-lobbies', () => {
@@ -56,6 +57,83 @@ const lobbyHandler = (io, socket) => {
         // broadcast the updated lobby list to everyone so other client's lobby browser refresh  
         io.emit('lobbies-feed', getLobbySummaries())
 
+    })
+
+    socket.on('leave-lobby', () => {
+        const lobby = getLobby(socket.lobbyId)
+        if (!lobby) return
+
+        const { gameState } = lobby
+        const { playerInfo } = gameState
+        const index = playerInfo.findIndex((p) => p.player_id === socket.id)
+        const lobbyId = socket.lobbyId
+
+        if (gameState.gameStatus === 'setup') {
+            // ── Setup: remove the player entirely ──────────────────────────────
+            if (index !== -1) {
+                const wasHost = playerInfo[index].host
+                playerInfo.splice(index, 1)
+
+                if (wasHost && playerInfo.length > 0) {
+                    playerInfo[0].host = true
+                    gameState.host = playerInfo[0]
+                }
+            }
+
+            socket.leave(lobbyId)
+            socket.lobbyId = null
+
+            if (playerInfo.length === 0) {
+                deleteLobby(lobbyId)
+            } else {
+                io.to(lobbyId).emit('gameState-feed', gameState)
+            }
+        } else {
+            // ── Mid-game: kill the character, check win conditions ─────────────
+            if (index !== -1) {
+                const player = playerInfo[index]
+
+                // Mark alive roles as dead (even → odd). Dead players stay in
+                // playerInfo so the rest of the lobby can see their fate.
+                if (player.role % 2 === 0) {
+                    player.role += 1
+                    console.log(`${player.username} left mid-game — marked dead`)
+                }
+
+                // Strip any pending vote from this player
+                gameState.votes = gameState.votes.filter(([voter]) => voter !== player.username)
+
+                // Transfer host to the first still-alive player
+                if (player.host) {
+                    const nextHost = playerInfo.find((p, i) => i !== index && p.role % 2 === 0)
+                    if (nextHost) {
+                        player.host = false
+                        nextHost.host = true
+                        gameState.host = nextHost
+                    }
+                }
+            }
+
+            // Re-check win conditions after the player is gone
+            const { numWolves, numVillagers } = countLivingRoles(playerInfo)
+            if (numWolves === 0) {
+                gameState.previousResult = 'Villagers Win!'
+                gameState.gameStatus = 'ended'
+                lobby.countdownTimer.stop()
+            } else if (numWolves >= numVillagers) {
+                gameState.previousResult = 'Wolves Win!'
+                gameState.gameStatus = 'ended'
+                lobby.countdownTimer.stop()
+            }
+
+            socket.leave(lobbyId)
+            socket.lobbyId = null
+
+            io.to(lobbyId).emit('gameState-feed', gameState)
+        }
+
+        socket.emit('left-lobby')
+        io.emit('lobbies-feed', getLobbySummaries())
     })
 }
 
