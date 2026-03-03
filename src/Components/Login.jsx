@@ -26,7 +26,7 @@ import Carousel from 'react-bootstrap/Carousel';
 
 const pictures = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20];
 
-const Login = ({ socket }) => {
+const Login = ({ socket, playerInfo = [] }) => {
   const [show, setShow] = useState(true);
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [userName, setUserName] = useState('');
@@ -34,6 +34,16 @@ const Login = ({ socket }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [picture, setPicture] = useState('s1');
   const [header, setHeader] = useState('');
+
+  const takenPictures = new Set(playerInfo.map(p => p.picture));
+
+  // If another player claims the currently selected icon, auto-pick the first free one
+  useEffect(() => {
+    if (takenPictures.has(picture)) {
+      const freeIdx = pictures.findIndex((_, i) => !takenPictures.has(`s${i + 1}`));
+      if (freeIdx !== -1) setPicture(`s${freeIdx + 1}`);
+    }
+  }, [playerInfo]);
 
   useEffect(() => {
     socket?.on('login-failed', (responseString) => {
@@ -48,7 +58,8 @@ const Login = ({ socket }) => {
     setUserName('');
     setPassword('');
     setConfirmPassword('');
-    setPicture('s1');
+    const freeIdx = pictures.findIndex((_, i) => !takenPictures.has(`s${i + 1}`));
+    setPicture(freeIdx !== -1 ? `s${freeIdx + 1}` : 's1');
     setHeader('');
   };
 
@@ -144,28 +155,34 @@ const Login = ({ socket }) => {
               <br />
               <div className="profile-pic">
                 <ButtonGroup>
-                  {pictures.map((profile, i) => (
-                    <ToggleButton
-                      key={i}
-                      id={`radio-${i}`}
-                      type="radio"
-                      variant="outline-danger"
-                      name="picture"
-                      value={`s${i + 1}`}
-                      checked={picture === `s${i + 1}`}
-                      onChange={(e) => setPicture(e.target.value)}
-                    >
-                      <img
-                        src={profile}
-                        style={{
-                          height: '5vh',
-                          paddingRight: '3px',
-                          backgroundColor: 'white',
-                          borderRadius: '1em',
-                        }}
-                      />
-                    </ToggleButton>
-                  ))}
+                  {pictures.map((profile, i) => {
+                    const val = `s${i + 1}`;
+                    const isTaken = takenPictures.has(val);
+                    return (
+                      <ToggleButton
+                        key={i}
+                        id={`radio-${i}`}
+                        type="radio"
+                        variant="outline-danger"
+                        name="picture"
+                        value={val}
+                        checked={picture === val}
+                        onChange={(e) => setPicture(e.target.value)}
+                        disabled={isTaken}
+                        style={{ opacity: isTaken ? 0.25 : 1 }}
+                      >
+                        <img
+                          src={profile}
+                          style={{
+                            height: '5vh',
+                            paddingRight: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '1em',
+                          }}
+                        />
+                      </ToggleButton>
+                    );
+                  })}
                 </ButtonGroup>
               </div>
               <br />

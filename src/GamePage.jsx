@@ -22,7 +22,7 @@ import PhaseChangeModal from './Components/PhaseChangeModal.jsx';
 import useSound from 'use-sound';
 import wolfSound from '../public/sounds/wolfSound.mp3';
 
-const GamePage = ({ socket, lobbyId }) => {
+const GamePage = ({ socket, lobbyId, initialPlayerInfo }) => {
   const [timer, setTimer] = useState(0);
   const [previousResult, setPreviousResult] = useState('Welcome to Day 0!');
   const [currentDay, setCurrentDay] = useState(0);
@@ -30,7 +30,7 @@ const GamePage = ({ socket, lobbyId }) => {
   const [votes, setVotes] = useState([]);
   const [gameStatus, setGameStatus] = useState('setup');
   const [phaseResults, setPhaseResults] = useState([]);
-  const [playerInfo, setPlayerInfo] = useState([]);
+  const [playerInfo, setPlayerInfo] = useState(initialPlayerInfo || []);
   const [host, setHost] = useState('');
   const [playerState, setPlayerState] = useState({});
   const [wolves, setWolves] = useState(1);
@@ -110,7 +110,7 @@ const GamePage = ({ socket, lobbyId }) => {
     //TODO: Fill in components properly with handlers.
     <>
       <Container fluid className="set-height" id="game">
-        <Login socket={socket} />
+        <Login socket={socket} playerInfo={playerInfo} />
         <CreateGameModal socket={socket} playerState={playerState} />
         <EndgameModal
           playerInfo={playerInfo}

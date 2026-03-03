@@ -7,6 +7,7 @@ const App = () => {
     const [socket, setSocket] = useState(null)
     const [lobbyId, setLobbyId] = useState(null)
     const [view, setView] = useState('lobby')
+    const [initialPlayerInfo, setInitialPlayerInfo] = useState([])
 
     useEffect(() => {
         setSocket(io())
@@ -14,11 +15,13 @@ const App = () => {
 
     useEffect(() => {
         if (!socket) return;
-        socket.on('lobby-joined', ({ lobbyId }) => {
+        socket.on('lobby-joined', ({ lobbyId, gameState }) => {
+            setInitialPlayerInfo(gameState?.playerInfo || [])
             setLobbyId(lobbyId)
             setView('game')
         })
         socket.on('left-lobby', () => {
+            setInitialPlayerInfo([])
             setLobbyId(null)
             setView('lobby')
         })
@@ -31,7 +34,7 @@ const App = () => {
     return (
         <>
             {view === 'lobby' && <LobbyPage socket={socket} />}
-            {view === 'game' && <GamePage socket={socket} lobbyId={lobbyId} />}
+            {view === 'game' && <GamePage socket={socket} lobbyId={lobbyId} initialPlayerInfo={initialPlayerInfo} />}
         </>
     )
 }
