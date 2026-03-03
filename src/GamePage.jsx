@@ -11,29 +11,22 @@ import Voting from './Components/Voting.jsx';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
 import Login from './Components/Login.jsx';
 import CreateGameModal from './Components/CreateGameModal.jsx';
 import EndgameModal from './Components/EndgameModal.jsx';
 import PhaseChangeModal from './Components/PhaseChangeModal.jsx';
 
-import useSound from 'use-sound';
-import wolfSound from '../public/sounds/wolfSound.mp3';
 
 const GamePage = ({ socket, lobbyId, initialPlayerInfo }) => {
   const [timer, setTimer] = useState(0);
   const [previousResult, setPreviousResult] = useState('Welcome to Day 0!');
   const [currentDay, setCurrentDay] = useState(0);
   const [currentPhase, setCurrentPhase] = useState('');
-  const [votes, setVotes] = useState([]);
   const [gameStatus, setGameStatus] = useState('setup');
   const [phaseResults, setPhaseResults] = useState([]);
   const [playerInfo, setPlayerInfo] = useState(initialPlayerInfo || []);
-  const [host, setHost] = useState('');
   const [playerState, setPlayerState] = useState({});
-  const [wolves, setWolves] = useState(1);
-  const [initialTimer, setInitialTimer] = useState(90);
   const [rules, setRules] = useState({
     numWolves: 1,
     timer: 90,
@@ -69,8 +62,6 @@ const GamePage = ({ socket, lobbyId, initialPlayerInfo }) => {
         phaseResults,
         playerInfo,
         gameStatus,
-        votes,
-        initWolves,
         initTimer,
         seerMessage,
         wolves,
@@ -84,8 +75,6 @@ const GamePage = ({ socket, lobbyId, initialPlayerInfo }) => {
         setCurrentPhase(currentPhase);
         setPhaseResults(phaseResults);
         setGameStatus(gameStatus);
-        setWolves(initWolves);
-        setInitialTimer(initTimer);
         setSeerMessage(seerMessage);
         setRules({
           numWolves: wolves.number,

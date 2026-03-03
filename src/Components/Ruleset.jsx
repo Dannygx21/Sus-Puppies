@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Styled from 'styled-components';
+import React from 'react';
 
 const Ruleset = ({ playerInfo, playerState, gameStatus, rules, seerMessage }) => {
 

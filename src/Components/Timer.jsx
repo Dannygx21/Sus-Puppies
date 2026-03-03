@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from "react";
-import Styled from "styled-components";
-import { GlobalStyles, SectionHeader } from "../../public/sharedStyles.js";
-import sun from "../../public/images/sun.png";
-import moon from "../../public/images/moon.png";
-import arrow from "../../public/images/arrow.png";
 import Moon from "../../public/images/alt-moon.svg";
 import Sun from "../../public/images/alt-sun.svg";
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 
 const Timer = ({ timer, currentPhase }) => {
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { GiSquare, GiCheckMark, GiHelp, GiWolfHowl, GiHeartPlus, GiBleedingEye } from 'react-icons/gi';
-import werewolf from '../../public/images/werewolf.png';
 import s1 from '../../public/images/1.svg';
 import s2 from '../../public/images/2.svg';
 import s3 from '../../public/images/3.svg';

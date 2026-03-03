@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from '../../public/images/logo.svg';
 import werewolf from '../../public/images/werewolf.svg';
 import werewolfTitle from '../../public/images/werewolf-title.svg';
 
