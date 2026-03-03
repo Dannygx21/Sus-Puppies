@@ -4,7 +4,7 @@ const connectDB = () => {
   const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env;
 
   return mongoose
-    .connect(DB_URL, { dbName: DB_DBNAME, user: DB_USER, pass: DB_PASS })
+    .connect(DB_URL, { dbName: DB_DBNAME, user: DB_USER, pass: DB_PASS, authSource: DB_DBNAME })
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => {
       console.error('MongoDB connection error:', err);
