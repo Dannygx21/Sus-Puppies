@@ -10,7 +10,8 @@ const App = () => {
     const [initialPlayerInfo, setInitialPlayerInfo] = useState([])
 
     useEffect(() => {
-        setSocket(io())
+        const socketPath = process.env.NODE_ENV === 'production' ? '/werewolf/socket.io' : '/socket.io';
+        setSocket(io({ path: socketPath }))
     }, [])
 
     useEffect(() => {
