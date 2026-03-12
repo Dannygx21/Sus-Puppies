@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -35,5 +36,14 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, './public'),
     filename: 'bundle.js',
+  },
+  optimization: isDev ? {} : {
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: { drop_console: true },
+        },
+      }),
+    ],
   },
 };
