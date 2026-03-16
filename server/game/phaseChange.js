@@ -1,3 +1,5 @@
+const { getLobby } = require('../state/lobbies');
+
 const ROLE_NAMES = [
   'Villager', 'Dead Villager',
   'Werewolf', 'Dead Werewolf',
@@ -136,10 +138,24 @@ const resolveNightVote = (gameState) => {
  * Emits updated gameState to all clients.
  */
 const phaseChange = (gameState, io, countdownTimer, lobbyId) => {
+  const aliveBefore = new Set(
+    gameState.playerInfo.filter((p) => p.role % 2 === 0).map((p) => p.player_id)
+  );
+
   if (gameState.currentPhase === 'day') {
     resolveDayVote(gameState);
   } else {
     resolveNightVote(gameState);
+  }
+
+  // Deliver ghost chat history to any player who just died this phase
+  const lobby = getLobby(lobbyId);
+  if (lobby) {
+    gameState.playerInfo.forEach((p) => {
+      if (aliveBefore.has(p.player_id) && p.role % 2 === 1) {
+        io.to(p.player_id).emit('ghost-chat-history', lobby.ghostChatHistory);
+      }
+    });
   }
 
   // Recount after resolution to check win conditions

@@ -11,9 +11,11 @@ const GhostChat = ({
   const [chat, setChat] = useState([]);
 
   useEffect(() => {
-    console.log(chat);
+    socket?.on('ghost-chat-history', (history) => {
+      setChat(history);
+    });
     socket?.on('ghost-chat-feed', (message) => {
-      setChat((chat) => [...chat, message]);
+      setChat((prev) => [...prev, message]);
     });
   }, [socket]);
 

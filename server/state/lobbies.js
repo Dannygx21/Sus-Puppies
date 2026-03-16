@@ -14,7 +14,7 @@ const createLobby = (name) => {
 
     const id = randomUUID();
     // Store it in the map an return the new lobby object
-    const lobby = { id, name, gameState: createGameState(), countdownTimer: null }
+    const lobby = { id, name, gameState: createGameState(), countdownTimer: null, ghostChatHistory: [] }
     lobbies.set(id, lobby)
     return lobby
 }

@@ -118,17 +118,15 @@ const GamePage = ({ socket, lobbyId, initialPlayerInfo }) => {
               previousResult={previousResult}
             />
           </Col>
-          {gameStatus !== 'ended' && (
-            <Col xs="auto" style={{ display: 'flex', alignItems: 'center', paddingRight: '16px' }}>
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={() => socket.emit('leave-lobby')}
-              >
-                {gameStatus === 'setup' ? '← Leave Lobby' : 'Leave Game'}
-              </Button>
-            </Col>
-          )}
+          <Col xs="auto" style={{ display: 'flex', alignItems: 'center', paddingRight: '16px' }}>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              onClick={() => socket.emit('leave-lobby')}
+            >
+              {gameStatus === 'setup' ? '← Leave Lobby' : 'Leave Game'}
+            </Button>
+          </Col>
         </Row>
         <Row id="chat-row">
           <Col xs={3} className="column whiteCard">
