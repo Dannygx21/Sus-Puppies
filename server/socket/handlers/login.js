@@ -44,15 +44,16 @@ const loginHandler = (io, socket) => {
       return;
     }
 
-    const limit = checkRateLimit(socket.id);
-    if (limit.blocked) {
-      socket.emit('login-failed', limit.message);
-      return;
-    }
-
     const validated = validateInputs(username, password);
     if (!validated.valid) {
       socket.emit('login-failed', validated.reason);
+      return;
+    }
+
+    const usernameKey = validated.username.toLowerCase();
+    const limit = checkRateLimit(usernameKey);
+    if (limit.blocked) {
+      socket.emit('login-failed', limit.message);
       return;
     }
 
@@ -60,12 +61,12 @@ const loginHandler = (io, socket) => {
     const result = await login(validated.username, validated.password);
 
     if (!result.success) {
-      recordFailure(socket.id);
+      recordFailure(usernameKey);
       socket.emit('login-failed', result.reason);
       return;
     }
 
-    clearAttempts(socket.id);
+    clearAttempts(usernameKey);
     addPlayerToLobby(socket, io, lobby.gameState, validated.username, picture);
     socket.emit('login-success', result.user);
   });
@@ -74,12 +75,6 @@ const loginHandler = (io, socket) => {
     const lobby = getLobby(socket.lobbyId);
     if (!lobby) {
       socket.emit('login-failed', 'You are not in a lobby.');
-      return;
-    }
-
-    const limit = checkRateLimit(socket.id);
-    if (limit.blocked) {
-      socket.emit('login-failed', limit.message);
       return;
     }
 
@@ -95,16 +90,23 @@ const loginHandler = (io, socket) => {
       return;
     }
 
+    const usernameKey = validated.username.toLowerCase();
+    const limit = checkRateLimit(usernameKey);
+    if (limit.blocked) {
+      socket.emit('login-failed', limit.message);
+      return;
+    }
+
     console.log(`Register attempt: ${validated.username}`);
     const result = await createUser(validated.username, validated.password, socket.id);
 
     if (!result.success) {
-      recordFailure(socket.id);
+      recordFailure(usernameKey);
       socket.emit('login-failed', result.reason);
       return;
     }
 
-    clearAttempts(socket.id);
+    clearAttempts(usernameKey);
     addPlayerToLobby(socket, io, lobby.gameState, validated.username, picture);
     socket.emit('login-success', result.user);
   });

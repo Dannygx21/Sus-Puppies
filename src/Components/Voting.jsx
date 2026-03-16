@@ -58,26 +58,16 @@ const Voting = ({
   }, [currentPhase, gameStatus]);
 
   const submitVote = (e) => {
-    if (!isVoted && currentPhase === 'day' || currentPhase === 'Day') {
-      if (voteSelection === 'select a player') {
-        setVoteSelection('NULL');
-      }
-      let voteTuple = [playerState.username, voteSelection];
-      // On Click of Submit button, create and send tuple of vote values
-      // VOTE SENDER
-      console.log(voteTuple); //WE KNOW WE MADE IT THIS FAR
-      socket?.emit('vote-send', voteTuple);
+    if (!isVoted && (currentPhase === 'day' || currentPhase === 'Day')) {
+      const target = voteSelection === 'select a player' ? 'NULL' : voteSelection;
+      socket?.emit('vote-send', [playerState.username, target]);
       setIsVoted(true);
       setVillagerOptions([]);
       setWolfOptions([]);
       setVoteSelection('select a player');
-    } else if (!isVoted && currentPhase === 'night' || currentPhase === 'Night') {
-      if (nightVoteSelection === 'select a player') {
-        setNightVoteSelection('NULL');
-      }
-      let voteTuple = [playerState.username, nightVoteSelection];
-      // On Click of Submit button, create and send tuple of vote values
-      socket?.emit('vote-send', voteTuple);
+    } else if (!isVoted && (currentPhase === 'night' || currentPhase === 'Night')) {
+      const target = nightVoteSelection === 'select a player' ? 'NULL' : nightVoteSelection;
+      socket?.emit('vote-send', [playerState.username, target]);
       setIsVoted(true);
       setVillagerOptions([]);
       setWolfOptions([]);

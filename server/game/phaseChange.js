@@ -70,7 +70,7 @@ const resolveDayVote = (gameState) => {
   const tally = tallyVotes(gameState.votes);
   const { victim, maxVotes } = getTopVote(tally);
 
-  if (maxVotes >= majority && victim && victim !== 'NULL') {
+  if (maxVotes >= majority && victim && victim !== 'NULL' && victim !== 'select a player') {
     killPlayer(gameState.playerInfo, victim);
     gameState.previousResult = `${victim} was killed yesterday!`;
     gameState.phaseResults.push([gameState.currentDay, 'day', victim]);
@@ -113,7 +113,7 @@ const resolveNightVote = (gameState) => {
   let { victim } = getTopVote(wolfVotes);
 
   // If wolves didn't cast a valid vote, pick a random living non-wolf
-  if (!victim || victim === 'NULL') {
+  if (!victim || victim === 'NULL' || victim === 'select a player') {
     const eligible = playerInfo.filter((p) => p.role === 0 || p.role === 4 || p.role === 6);
     victim = eligible[Math.floor(Math.random() * eligible.length)]?.username || '';
   }

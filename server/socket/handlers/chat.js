@@ -10,11 +10,12 @@ const { sanitizeString } = require('../../utils/sanitize');
 
 const MAX_MSG_LEN = 300;
 
-const broadcast = (io, socket, feedEvent) => (raw) => {
+const broadcast = (io, socket, feedEvent) => ({ username, message } = {}) => {
   if (!socket.lobbyId) return;
-  const message = sanitizeString(raw, MAX_MSG_LEN);
-  if (!message) return;
-  io.to(socket.lobbyId).emit(feedEvent, message);
+  const cleanUsername = sanitizeString(username, 50);
+  const cleanMessage = sanitizeString(message, MAX_MSG_LEN);
+  if (!cleanUsername || !cleanMessage) return;
+  io.to(socket.lobbyId).emit(feedEvent, { username: cleanUsername, message: cleanMessage });
 };
 
 const chatHandlers = (io, socket) => {
